@@ -23,6 +23,10 @@ namespace SatoruErogeTimer
 {
 	public static class Utility
 	{
+		/////////////////<version>/////////////////
+		public const string version = "1.7.1";
+		/////////////////</version>////////////////
+
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
 
@@ -31,5 +35,9 @@ namespace SatoruErogeTimer
 
 		public static Font fRunning = new Font(Control.DefaultFont, FontStyle.Bold);
 		public static Font fResting = new Font(Control.DefaultFont, FontStyle.Regular);
+
+		public static string strSourcePath = Application.StartupPath + "\\";
+		public static string dataPath = strSourcePath + "games.dat";
+		public static string syncPath = strSourcePath + "sync.xml";
 	}
 }

@@ -18,12 +18,13 @@ using System.Collections;
 using System.IO.Compression;
 using System.Threading;
 using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SatoruErogeTimer
 {
 	public class Controller
 	{
-		ErogeList erogeList=new ErogeList();
+		public ErogeList erogeList=new ErogeList();
 		public Controller() { } 
 		public void LoadDataFile(string dataPath)
 		{
@@ -33,13 +34,13 @@ namespace SatoruErogeTimer
 				erogeList = new ErogeList();
 			}
 			else
-			{  //Use XmlSerializer to deserialize xml file and load class variable
+			{  //Use Serializer to deserialize file and load class variable
 				try
 				{
-					XmlSerializer erogeListSerializer = new XmlSerializer(typeof(ErogeList));
-					FileStream dataFileStream = new FileStream(dataPath, FileMode.Open);
-					erogeList = (ErogeList)erogeListSerializer.Deserialize(dataFileStream);
-					dataFileStream.Close();
+					FileStream fs = new FileStream(dataPath, FileMode.Open);
+					BinaryFormatter bf = new BinaryFormatter();
+					erogeList = bf.Deserialize(fs) as ErogeList;
+					fs.Close();
 				}
 				catch
 				{
@@ -48,11 +49,11 @@ namespace SatoruErogeTimer
 			}
 		}
 		public void SaveDataFile(string dataPath)
-		{
-			XmlSerializer erogeListSerializer = new XmlSerializer(typeof(ErogeList));
-			StreamWriter dataFileStreamWriter = new StreamWriter(dataPath);
-			erogeListSerializer.Serialize(dataFileStreamWriter, erogeList);
-			dataFileStreamWriter.Close();
+		{	//Use Serializer to save class variable
+			FileStream fs = new FileStream(dataPath, FileMode.Create);
+			BinaryFormatter bf = new BinaryFormatter();
+			bf.Serialize(fs, erogeList);
+			fs.Close();
 		}
 		public void LoadSyncFile(string syncPath)
 		{
@@ -68,10 +69,7 @@ namespace SatoruErogeTimer
 		}
 		public void refreshXML()
 		{
-			string strSourcePath = Application.StartupPath + "\\";
-			string dataPath = strSourcePath + "data.xml";
-			string syncPath = strSourcePath + "sync.xml";
-			SaveDataFile(dataPath);
+			SaveDataFile(Utility.dataPath);
 		}
 
 		public void check()
@@ -84,7 +82,7 @@ namespace SatoruErogeTimer
 				erogeList.check(3);
 				//	listStyle();
 			}	
-			refreshXML();
+			//refreshXML();
 		}
 		public List<Eroge> getErogeList()
 		{

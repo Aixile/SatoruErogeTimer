@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace SatoruErogeTimer
 {
+	[Serializable]
 	public class ErogeList
 	{
 		List<Eroge> erg=new List<Eroge>();

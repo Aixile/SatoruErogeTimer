@@ -21,12 +21,9 @@ using System.Xml.Serialization;
 
 namespace SatoruErogeTimer
 {
+	[Serializable]
 	public class Eroge
 	{
-		//public string title;
-		//public float time;
-		//public string addr;
-		//public string processName;
 		string title;
 		public string Title
 		{
@@ -98,10 +95,5 @@ namespace SatoruErogeTimer
 			}
 			return true;
 		}
-	/*	public ListViewItem toListViewItem()
-		{
-			ListViewItem i = new ListViewItem(new string[] { title, getTime(), addr, getState() });
-			return i;
-		}*/
 	}
 }

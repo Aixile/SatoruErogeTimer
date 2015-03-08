@@ -24,9 +24,7 @@ namespace SatoruErogeTimer
 
 	public partial class MainForm : Form
 	{
-        /////////////////<version>/////////////////
-        public const string version = "1.7.1";
-        /////////////////</version>////////////////
+
 
         protected override void WndProc(ref Message m)
         {
@@ -49,12 +47,8 @@ namespace SatoruErogeTimer
 			InitializeComponent();
 			timer1.Enabled = true;
             
-			XmlDocument xmlDoc = new XmlDocument();
-            string strSourcePath = Application.StartupPath + "\\";
-            string dataPath = strSourcePath + "data.xml";
-            string syncPath = strSourcePath + "sync.xml";
-			erogeController.LoadDataFile(dataPath);
-			erogeController.LoadSyncFile(syncPath);
+			erogeController.LoadDataFile(Utility.dataPath);
+			erogeController.LoadSyncFile(Utility.syncPath);
 			updateListView(erogeController.getErogeList());
 			//ErogeList.printToListViewer(lstShow);
 
@@ -358,7 +352,7 @@ namespace SatoruErogeTimer
 
 		private void erogeTimerについてToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-            MessageBox.Show("Version "+version+" By SakuraiSatoru, Many thanks to Amane Nagatsuki", "ErogeTimer");
+            MessageBox.Show("Version "+Utility.version+" By SakuraiSatoru, Many thanks to Amane Nagatsuki", "ErogeTimer");
 		}
         private void labelRedraw()
         {
@@ -1013,9 +1007,9 @@ namespace SatoruErogeTimer
                 string retString = myStreamReader.ReadToEnd();
                 myStreamReader.Close();
                 myResponseStream.Close();
-                if (retString != version)
+                if (retString != Utility.version)
                 {
-                    if (MessageBox.Show("新しいバージョンがあります、確認しますか？\n" + version + "-->" + retString, "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                    if (MessageBox.Show("新しいバージョンがあります、確認しますか？\n" + Utility.version + "-->" + retString, "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
                         System.Diagnostics.Process.Start("http://106.187.52.177:8080/satoru/erogetimer.html");
                     }

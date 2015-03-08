@@ -17,22 +17,16 @@ using System.Web;
 using System.Collections;
 using System.IO.Compression;
 using System.Threading;
+using System.Xml.Serialization;
 
 namespace SatoruErogeTimer
 {
-	public partial class Form1 : Form
+
+	public partial class MainForm : Form
 	{
         /////////////////<version>/////////////////
         public const string version = "1.7.1";
         /////////////////</version>////////////////
-
-
-
-		[DllImport("user32.dll", CharSet = CharSet.Auto)]
-		public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
-
-		[DllImport("user32.dll", EntryPoint = "GetForegroundWindow")]
-		public static extern IntPtr GetForegroundWindow();
 
         protected override void WndProc(ref Message m)
         {
@@ -49,128 +43,99 @@ namespace SatoruErogeTimer
             }
         }
 
-		public Form1()
+		public static Controller erogeController=new Controller();
+		public MainForm()
 		{
 			InitializeComponent();
 			timer1.Enabled = true;
-
             
 			XmlDocument xmlDoc = new XmlDocument();
             string strSourcePath = Application.StartupPath + "\\";
-            string configPath = strSourcePath + "config.xml";
+            string dataPath = strSourcePath + "data.xml";
             string syncPath = strSourcePath + "sync.xml";
-			if (!File.Exists(configPath))
-			{   //第一次启动
-				XmlDeclaration xmldecl;
-				xmldecl = xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
-				xmlDoc.AppendChild(xmldecl);
-				XmlNode xmlelem = xmlDoc.CreateElement("", "Eroges", "");
-				xmlDoc.AppendChild(xmlelem);
-                xmlDoc.Save(configPath);
-			}
-			else
-			{   //读取xml
-				xmlDoc.Load(configPath);
-				XmlNode root = xmlDoc.SelectSingleNode("Eroges");
-				XmlNodeList eroges = root.ChildNodes;
-				foreach (XmlNode erogeNode in eroges)
-				{
-					string path;
-					string title;
-					string time;
-					XmlElement eN = (XmlElement)erogeNode;
-					path = eN.GetAttribute("path");
-					XmlNode titleNode = erogeNode.SelectSingleNode("title");
-					title = titleNode.InnerText;
-					XmlNode timeNode = erogeNode.SelectSingleNode("time");
-					time = timeNode.InnerText;
-					lstShow.Items.Add(new ListViewItem(new string[] {title,time,path,"resting"}));
-                }
-					listStyle();
-			}
-            if (File.Exists(syncPath)) 
-            {//载入用户名
-                XmlDocument xmlDoc2 = new XmlDocument();
-                xmlDoc2.Load(syncPath);
-                XmlNode rootNode = xmlDoc2.SelectSingleNode("Sync");
-                XmlNodeList userName = rootNode.ChildNodes;
-                this.label1.Text = userName[0].InnerText;
-                labelRedraw();
-            }
+			erogeController.LoadDataFile(dataPath);
+			erogeController.LoadSyncFile(syncPath);
+			updateListView(erogeController.getErogeList());
+			//ErogeList.printToListViewer(lstShow);
 
-            lstShow.ListViewItemSorter = new Sorter();
+    /*        lstShow.ListViewItemSorter = new Sorter();
             lstShow.Columns[1].Tag = "Numeric";
-	//		this.WindowState = FormWindowState.Minimized;
 
             Sorter s = (Sorter)lstShow.ListViewItemSorter;
             s.Column = 1;
             s.Order = System.Windows.Forms.SortOrder.Descending;
-            lstShow.Sort();
-
-
+            lstShow.Sort();*/
 
             //检查更新
             Thread updateThread = new Thread(new ThreadStart(checkUpdate));
             updateThread.Start();
-
 		}
-
-		private void refreshXML()
+		bool isEqual(ListViewItem a, ListViewItem b)
 		{
-			XmlDocument xmlDoc = new XmlDocument();
-            string strSourcePath = Application.StartupPath + "\\";
-            string configPath = strSourcePath + "config.xml";
-            string syncPath = strSourcePath + "sync.xml";
-            xmlDoc.Load(configPath);
-			XmlNode root = xmlDoc.SelectSingleNode("Eroges");
-			root.RemoveAll();
-			foreach (ListViewItem item in lstShow.Items)
+			if (a.SubItems[0].Text != b.SubItems[0].Text) return false;
+			if (a.SubItems[1].Text != b.SubItems[1].Text) return false;
+			if (a.SubItems[2].Text != b.SubItems[2].Text) return false;
+			if (a.SubItems[3].Text != b.SubItems[3].Text) return false;
+			return true;
+		}
+		void updateListView(List<Eroge> erg)
+		{
+			bool changed = false;
+			if (erg.Count != lstShow.Items.Count) changed = true;
+		//	lstShow.Items.Clear();
+			foreach (Eroge i in erg)
 			{
-				string path = item.SubItems[2].Text;
-				string title = item.SubItems[0].Text;
-				string time = item.SubItems[1].Text;
-				XmlElement erogeNode = xmlDoc.CreateElement("Node");
-				erogeNode.SetAttribute("path", path);
-				XmlElement titleNode = xmlDoc.CreateElement("title");
-				titleNode.InnerText = title;
-				erogeNode.AppendChild(titleNode);
-				XmlElement timeNode = xmlDoc.CreateElement("time");
-				timeNode.InnerText = time;
-				erogeNode.AppendChild(timeNode);
-				root.AppendChild(erogeNode);
-			};
-            xmlDoc.Save(configPath);
+				ListViewItem lstItem = new ListViewItem(new string[] { i.Title, i.getTime(), i.Path, i.getState() });
+				switch (i.Status)
+				{
+					case Eroge.RunningStatus.Focused:
+						lstItem.ForeColor = Color.Black;
+						lstItem.Font = Utility.fRunning;
+						break;
+					case Eroge.RunningStatus.Resting:
+						lstItem.ForeColor = Color.Gray;
+						lstItem.Font = Utility.fResting;
+						break;
+					case Eroge.RunningStatus.Unfocused:
+						lstItem.ForeColor = Color.Black;
+						lstItem.Font = Utility.fResting;
+						break;
+				}
+				int idx = erg.IndexOf(i);
+				if (idx < lstShow.Items.Count)
+				{
+					if (!isEqual(lstShow.Items[erg.IndexOf(i)], lstItem))
+					{
+						lstShow.Items[erg.IndexOf(i)] = lstItem;
+						changed = true;
+					}
+				}
+				else
+				{
+					lstShow.Items.Add(lstItem);
+				}
+			//	lstShow.Items.Add(lstItem);
+			}
+			if (lstShow.Items.Count > erg.Count)
+			{
+				for (int j = lstShow.Items.Count-1; j>=erg.Count;j--)
+				{
+					lstShow.Items.RemoveAt(j);
+				}
+			}
+			if (changed) erogeController.refreshXML();
 		}
-
-        private void appendXML(String pathStr, String titleStr, String timeStr)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            string strSourcePath = Application.StartupPath + "\\";
-            string configPath = strSourcePath + "config.xml";
-            string syncPath = strSourcePath + "sync.xml";
-            xmlDoc.Load(configPath);
-            XmlNode root = xmlDoc.SelectSingleNode("Eroges");
-
-            XmlElement erogeNode = xmlDoc.CreateElement("Node");
-            erogeNode.SetAttribute("path", pathStr);
-            XmlElement titleNode = xmlDoc.CreateElement("title");
-            titleNode.InnerText = titleStr;
-            erogeNode.AppendChild(titleNode);
-            XmlElement timeNode = xmlDoc.CreateElement("time");
-            timeNode.InnerText = timeStr;
-            erogeNode.AppendChild(timeNode);
-            root.AppendChild(erogeNode);
-            xmlDoc.Save(configPath);
-        }
-
-		private void fileToolStripMenuItem_Click(object sender, EventArgs e)
+		private void timer1_Tick(object sender, EventArgs e)
 		{
-			Form2 processWindow = new Form2();
-
+			erogeController.updateTime();
+			updateListView(erogeController.getErogeList());
+		}
+		private void GetProcessStripMenuItem_Click(object sender, EventArgs e)
+		{
+			ProcessForm processWindow = new ProcessForm();
 
             processWindow.StartPosition = FormStartPosition.Manual;  
             Point a = new Point();
-
             a.X = this.Left+50;
             a.Y = this.Top+50;
             processWindow.Location = a;
@@ -178,154 +143,20 @@ namespace SatoruErogeTimer
             
 			if (ddr == DialogResult.OK)
 			{
-				lstShow.Items.Add(
-				new ListViewItem(new string[]{processWindow.erogeCart.title,"0.000",processWindow.erogeCart.addr,"running"}));
+				erogeController.check();
+				updateListView(erogeController.getErogeList());
 			}
 		}
-
-		public Eroge cart = new Eroge();
-
-		private void listStyle()
-		{
-			Font fRunning = new Font(Control.DefaultFont, FontStyle.Bold);
-			Font fResting = new Font(Control.DefaultFont, FontStyle.Regular);
-			foreach (ListViewItem item in lstShow.Items)
-			{
-				switch (item.SubItems[3].Text)
-				{
-					case "running":
-						item.ForeColor = Color.Black;
-						item.Font = fRunning;
-						break;
-					case "resting":
-						item.ForeColor = Color.Gray;
-						item.Font = fResting;
-						break;
-					case "unfocused":
-						item.ForeColor = Color.Black;
-						item.Font = fResting;
-						break;
-				}
-
-			}
-		}
-		private void timer1_Tick(object sender, EventArgs e)
-		{
-			if (lstShow.Items.Count != 0)
-			{
-
-
-
-				IntPtr actWin = GetForegroundWindow();
-				int calcID;
-				GetWindowThreadProcessId(actWin, out calcID);
-
-
-
-
-				Form2 processWindow = new Form2();
-				Process[] proc = Process.GetProcesses();
-				string procPath;
-
-				foreach (Process p in proc)
-				{
-					try
-					{
-						procPath = Convert.ToString(p.MainModule.FileName);
-						string procPid = Convert.ToString(p.Id);
-						foreach (ListViewItem item in lstShow.Items)
-						{
-							if (item.SubItems[2].Text == procPath)
-							{
-								if (item.SubItems[3].Text == "resting" || item.SubItems[3].Text == "unfocused")
-								{
-									if (procPid == calcID.ToString())
-									{
-										item.SubItems[3].Text = "running";
-									}
-									else
-									{
-										item.SubItems[3].Text = "unfocused";
-									}
-								}
-								else
-								{ //item.SubItems[3].Text == "running"
-									if (procPid != calcID.ToString())
-									{
-										item.SubItems[3].Text = "unfocused";
-									}
-								}
-
-
-							};
-						};
-					}
-					catch
-					{
-						; //system 等拒绝访问的进程 抛弃
-					}
-
-				}
-
-				//判断之前在running的进程是否死亡决定是否加时
-				foreach (ListViewItem item in lstShow.Items)
-				{
-					if (item.SubItems[3].Text == "running")
-					{
-						bool deadFlag = false;
-
-						foreach (Process p in proc)
-						{
-							try
-							{
-								procPath = Convert.ToString(p.MainModule.FileName);
-								if (item.SubItems[2].Text == procPath)
-								{
-									deadFlag = true;
-								}
-							}
-							catch
-							{
-								; //system 等拒绝访问的进程 抛弃
-							}
-						}
-						if (deadFlag == false)
-						{
-							item.SubItems[3].Text = "resting";
-						}
-						else
-						{
-							float t1 = float.Parse(item.SubItems[1].Text);
-							float t2 = timer1.Interval / 3600000F;
-							float t = t1 + t2;
-							item.SubItems[1].Text = t.ToString("f3");
-
-
-
-						}
-					}
-
-				}
-
-			}
-			listStyle();
-			refreshXML();
-		}
-
 		private void ゲームを実行するToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			try
 			{
 				if (lstShow.SelectedItems.Count > 0)
 				{
-					ProcessStartInfo start = new ProcessStartInfo(lstShow.SelectedItems[0].SubItems[2].Text);
-					start.CreateNoWindow = false;
-					start.RedirectStandardOutput = true;
-					start.RedirectStandardInput = true;
-					start.UseShellExecute = false;
-					start.WorkingDirectory = new FileInfo(lstShow.SelectedItems[0].SubItems[2].Text).DirectoryName;
-					Process p = Process.Start(start);
-					lstShow.SelectedItems[0].SubItems[3].Text = "running";
+					if (erogeController.runErogeByIndex(lstShow.SelectedIndices[0]))
+					{
+						updateListView(erogeController.getErogeList());
+					}
 				}
 				else
 				{
@@ -337,7 +168,6 @@ namespace SatoruErogeTimer
 				MessageBox.Show("エラーが発生しました、パスは正しくありません", "ErogeTimer");
 			};
 		}
-
 		private void 名前編集ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (lstShow.SelectedItems.Count > 0)
@@ -349,13 +179,15 @@ namespace SatoruErogeTimer
                 a.X = this.Left + 50;
                 a.Y = this.Top + 50;
                 editNameWindow.Location = a;
-				editNameWindow.Text = "ゲーム名編集";
+				editNameWindow.Text = "タイトルを編集する";
                 editNameWindow.Flag = lstShow.SelectedItems[0].SubItems[0].Text;
 				DialogResult ddr = editNameWindow.ShowDialog();
 				if (ddr == DialogResult.OK)
 				{
-					lstShow.SelectedItems[0].SubItems[0].Text = editNameWindow.str;
-                    refreshXML();
+					if (erogeController.changeNameByIndex(lstShow.SelectedIndices[0], editNameWindow.str))
+					{
+						updateListView(erogeController.getErogeList());
+					}
 				}
 			}
 			else
@@ -363,7 +195,6 @@ namespace SatoruErogeTimer
 				MessageBox.Show("何も選択されていません", "ErogeTimer");
 			}
 		}
-
 		private void 時間編集ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (lstShow.SelectedItems.Count > 0)
@@ -375,13 +206,15 @@ namespace SatoruErogeTimer
                 a.X = this.Left + 50;
                 a.Y = this.Top + 50;
                 editTimeWindow.Location = a;
-				editTimeWindow.Text = "時間調整";
-                editTimeWindow.Flag = lstShow.SelectedItems[0].SubItems[1].Text;
+				editTimeWindow.Text = "時間を調整する";
+				editTimeWindow.Flag = erogeController.getErogeList()[lstShow.SelectedIndices[0]].Time.ToString();
 				DialogResult ddr = editTimeWindow.ShowDialog();
 				if (ddr == DialogResult.OK)
 				{
-					lstShow.SelectedItems[0].SubItems[1].Text = editTimeWindow.str;
-                    refreshXML();
+					if (erogeController.changeTimeByIndex(lstShow.SelectedIndices[0], editTimeWindow.str))
+					{
+						updateListView(erogeController.getErogeList());
+					}
 				}
 			}
 			else
@@ -389,31 +222,16 @@ namespace SatoruErogeTimer
 				MessageBox.Show("何も選択されていません", "ErogeTimer");
 			}
 		}
-
-        /*
-		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			if (MessageBox.Show("終了確認？", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
-			{
-				Dispose();
-				Application.Exit();
-			}
-			else
-			{
-				e.Cancel = true;
-			}
-		}
-         */
-
-		private void ゲームをToolStripMenuItem_Click(object sender, EventArgs e)
+		private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (lstShow.SelectedItems.Count > 0)
 			{
-				if (MessageBox.Show("削除確認？", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+				if (MessageBox.Show("削除しますか？", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
 				{
-					ListViewItem item = this.lstShow.SelectedItems[0];
-					this.lstShow.Items.Remove(item);
-                    refreshXML();
+					if (erogeController.deleteByIndex(lstShow.SelectedIndices[0]))
+					{
+						updateListView(erogeController.getErogeList());
+					}
 				}
 			}
 			else
@@ -421,13 +239,16 @@ namespace SatoruErogeTimer
 				MessageBox.Show("何も選択されていません", "ErogeTimer");
 			}
 		}
-        private void パース設定ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void パス設定ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (lstShow.SelectedItems.Count > 0)
             {
                 if (MessageBox.Show("プロセスフォーム...はい\n自分で入力...いいえ", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                 {
-                    Form2 processWindow = new Form2();
+					ProcessForm processWindow = new ProcessForm()
+					{
+						selectedErogeIndex = lstShow.SelectedIndices[0]
+					};
                     processWindow.StartPosition = FormStartPosition.Manual;
                     Point a = new Point();
                     a.X = this.Left + 50;
@@ -436,8 +257,7 @@ namespace SatoruErogeTimer
                     DialogResult ddr = processWindow.ShowDialog();
                     if (ddr == DialogResult.OK)
                     {
-                        lstShow.SelectedItems[0].SubItems[2].Text = processWindow.erogeCart.addr;
-                        refreshXML();
+						updateListView(erogeController.getErogeList());
                     }
                 }
                 else
@@ -449,13 +269,15 @@ namespace SatoruErogeTimer
                     a.X = this.Left + 50;
                     a.Y = this.Top + 50;
                     editPassWindow.Location = a;
-                    editPassWindow.Text = "パス設定";
+                    editPassWindow.Text = "パスを設定する";
                     editPassWindow.Flag = lstShow.SelectedItems[0].SubItems[2].Text;
                     DialogResult ddr = editPassWindow.ShowDialog();
                     if (ddr == DialogResult.OK)
                     {
-                        lstShow.SelectedItems[0].SubItems[2].Text = editPassWindow.str;
-                        refreshXML();
+						if (erogeController.changePathByIndex(lstShow.SelectedIndices[0],editPassWindow.str))
+						{
+							updateListView(erogeController.getErogeList());
+						}
                     }
                 }
             }
@@ -464,7 +286,6 @@ namespace SatoruErogeTimer
                 MessageBox.Show("何も選択されていません", "ErogeTimer");
             }
         }
-
 		private void Form1_Resize(object sender, EventArgs e)
 		{
 			if (this.WindowState == FormWindowState.Minimized)
@@ -473,7 +294,6 @@ namespace SatoruErogeTimer
 
 			}
 		}
-
 		private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
 		{
 			if (WindowState == FormWindowState.Minimized)
@@ -484,21 +304,18 @@ namespace SatoruErogeTimer
 
 			}
 		}
-
 		private void 終了ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
             Dispose();
             Application.Exit();
 		}
-
-
 		public static void SetAutoRun(string fileName, bool isAutoRun)
 		{
 			RegistryKey reg = null;
 			try
 			{
                 if (!System.IO.File.Exists(fileName))
-                { throw new Exception("ファイル存在しない！"); }
+                { throw new Exception("ファイルを見つけない！"); }
 				String name = fileName.Substring(fileName.LastIndexOf(@"\") + 1);
 				reg = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
                 if (reg == null)
@@ -526,7 +343,6 @@ namespace SatoruErogeTimer
 				SetAutoRun(str, true);
                 MessageBox.Show("設定終了", "ErogeTimer");
 			}
-
 		}
 
 		private void 元に戻すToolStripMenuItem_Click(object sender, EventArgs e)
@@ -542,9 +358,8 @@ namespace SatoruErogeTimer
 
 		private void erogeTimerについてToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-            MessageBox.Show("By SakuraiSatoru, Many thanks to Amane Nagatsuki", "ErogeTimer");
+            MessageBox.Show("Version "+version+" By SakuraiSatoru, Many thanks to Amane Nagatsuki", "ErogeTimer");
 		}
-
         private void labelRedraw()
         {
             Point a = new Point();
@@ -555,7 +370,7 @@ namespace SatoruErogeTimer
         private void ユーザ変更ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string strSourcePath = Application.StartupPath + "\\";
-            string configPath = strSourcePath + "config.xml";
+            string dataPath = strSourcePath + "data.xml";
             string syncPath = strSourcePath + "sync.xml";
             if (!File.Exists(syncPath))
             {
@@ -590,8 +405,6 @@ namespace SatoruErogeTimer
                     this.label1.Text = userName;
                     labelRedraw();
                 }
-
-                
             }
             else
             {
@@ -620,18 +433,11 @@ namespace SatoruErogeTimer
                         this.label1.Text = userNameStr;
                         labelRedraw();
                     }
-
-
                 }
-
-
             }
         }
-
         private void 同期ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            
-
             if (this.label1.Text.Trim() == String.Empty)
             {
                 MessageBox.Show("ユーザが必要です", "ErogeTimer");
@@ -641,11 +447,11 @@ namespace SatoruErogeTimer
                 this.Text = "ErogeTimer @同期中";
                 this.timer1.Enabled = false;
                 string strSourcePath = Application.StartupPath + "\\";
-                string configPath = strSourcePath + "config.xml";
-                string configBakPath = strSourcePath + "config.xml.bak";
+                string dataPath = strSourcePath + "data.xml";
+				string dataBakPath = strSourcePath + "data.xml.bak";
                 string syncPath = strSourcePath + "sync.xml";
                 string syncBakPath = strSourcePath + "sync.xml.bak";
-                File.Copy((configPath), (configBakPath), true);
+				File.Copy((dataPath), (dataBakPath), true);
                 File.Copy((syncPath), (syncBakPath), true);
                 try
                 {
@@ -709,12 +515,11 @@ namespace SatoruErogeTimer
                     }
 
                     XmlDocument xmlLocalConfigDoc = new XmlDocument();
-                    xmlLocalConfigDoc.Load(configPath);
+					xmlLocalConfigDoc.Load(dataPath);
                     XmlNode configDocRoot = xmlLocalConfigDoc.SelectSingleNode("Eroges");
                     XmlNodeList configErogeNodes = configDocRoot.ChildNodes;
 
-
-
+					//Need To Be fixed
                     //s反应到config.xml
                     if (retString != String.Empty)
                     {
@@ -753,12 +558,12 @@ namespace SatoruErogeTimer
                                     timeNode.InnerText = detail[1];
                                     erogeNode.AppendChild(timeNode);
                                     configDocRoot.AppendChild(erogeNode);
-                                    xmlLocalConfigDoc.Save(configPath);
+									xmlLocalConfigDoc.Save(dataPath);
                                 }
                             }
 
                         }
-                        xmlLocalConfigDoc.Save(configPath);
+						xmlLocalConfigDoc.Save(dataPath);
                     }
                     //s反应到config.xml
 
@@ -809,7 +614,7 @@ namespace SatoruErogeTimer
 
 
                     }
-                    listStyle();
+            //        listStyle();
                     //重新载入listview
 
 
@@ -831,9 +636,9 @@ namespace SatoruErogeTimer
                     string retString2 = myStreamReader2.ReadToEnd();
                     myStreamReader2.Close();
                     myResponseStream2.Close();
-                    if (File.Exists(configBakPath))
+					if (File.Exists(dataBakPath))
                     {
-                        File.Delete(configBakPath);
+						File.Delete(dataBakPath);
                     }
                     if (File.Exists(syncBakPath))
                     {
@@ -901,7 +706,7 @@ namespace SatoruErogeTimer
                 }
                 catch 
                 {
-                    MessageBox.Show("インタネットエラー");
+                    MessageBox.Show("インターネットエラー");
                 }
                 finally { this.Text = ("ErogeTimer"); }
 
@@ -987,7 +792,7 @@ namespace SatoruErogeTimer
                         if (ddr == DialogResult.OK)
                         {
                             erogeSavadataPath = editSavePathWindow.str;
-                            refreshXML();
+                            //refreshXML();
                         }
 
 
@@ -1040,8 +845,6 @@ namespace SatoruErogeTimer
 
         private void restore()
         {
-            
-
             if (erogeSavadataPath != string.Empty)
             {
                 try
@@ -1180,7 +983,7 @@ namespace SatoruErogeTimer
 
         private void lstShow_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            Sorter s = (Sorter)lstShow.ListViewItemSorter;
+     /*       Sorter s = (Sorter)lstShow.ListViewItemSorter;
             s.Column = e.Column;
 
             if (s.Order == System.Windows.Forms.SortOrder.Ascending)
@@ -1192,7 +995,7 @@ namespace SatoruErogeTimer
                 s.Order = System.Windows.Forms.SortOrder.Ascending;
             }
             lstShow.Sort();
-            refreshXML();
+            refreshXML();*/
         }
 
         private void checkUpdate()
@@ -1221,6 +1024,11 @@ namespace SatoruErogeTimer
             catch { }
 
         }
+
+		private void lstShow_SelectedIndexChanged(object sender, EventArgs e)
+		{
+
+		}
 
 	}
 }

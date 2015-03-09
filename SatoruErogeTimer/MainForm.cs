@@ -52,14 +52,6 @@ namespace SatoruErogeTimer
 			updateListView(erogeController.getErogeList());
 			//ErogeList.printToListViewer(lstShow);
 
-    /*        lstShow.ListViewItemSorter = new Sorter();
-            lstShow.Columns[1].Tag = "Numeric";
-
-            Sorter s = (Sorter)lstShow.ListViewItemSorter;
-            s.Column = 1;
-            s.Order = System.Windows.Forms.SortOrder.Descending;
-            lstShow.Sort();*/
-
             //检查更新
             Thread updateThread = new Thread(new ThreadStart(checkUpdate));
             updateThread.Start();
@@ -76,7 +68,6 @@ namespace SatoruErogeTimer
 		{
 			bool changed = false;
 			if (erg.Count != lstShow.Items.Count) changed = true;
-		//	lstShow.Items.Clear();
 			foreach (Eroge i in erg)
 			{
 				ListViewItem lstItem = new ListViewItem(new string[] { i.Title, i.getTime(), i.Path, i.getState() });
@@ -100,7 +91,12 @@ namespace SatoruErogeTimer
 				{
 					if (!isEqual(lstShow.Items[erg.IndexOf(i)], lstItem))
 					{
-						lstShow.Items[erg.IndexOf(i)] = lstItem;
+						lstShow.Items[erg.IndexOf(i)].SubItems[0].Text=lstItem.SubItems[0].Text;
+						lstShow.Items[erg.IndexOf(i)].SubItems[1].Text=lstItem.SubItems[1].Text;
+						lstShow.Items[erg.IndexOf(i)].SubItems[2].Text=lstItem.SubItems[2].Text;
+						lstShow.Items[erg.IndexOf(i)].SubItems[3].Text=lstItem.SubItems[3].Text;
+						lstShow.Items[erg.IndexOf(i)].ForeColor = lstItem.ForeColor;
+						lstShow.Items[erg.IndexOf(i)].Font = lstItem.Font;
 						changed = true;
 					}
 				}
@@ -108,7 +104,6 @@ namespace SatoruErogeTimer
 				{
 					lstShow.Items.Add(lstItem);
 				}
-			//	lstShow.Items.Add(lstItem);
 			}
 			if (lstShow.Items.Count > erg.Count)
 			{
@@ -139,6 +134,7 @@ namespace SatoruErogeTimer
 			{
 				erogeController.check();
 				updateListView(erogeController.getErogeList());
+
 			}
 		}
 		private void ゲームを実行するToolStripMenuItem_Click(object sender, EventArgs e)
@@ -977,6 +973,15 @@ namespace SatoruErogeTimer
 
         private void lstShow_ColumnClick(object sender, ColumnClickEventArgs e)
         {
+			switch (e.Column)
+			{
+				case 0: erogeController.sortByName(); break;
+				case 1: erogeController.sortByTime(); break;
+				case 2: erogeController.sortByPath(); break;
+				case 3: erogeController.sortByStatus(); break;
+			}
+			updateListView(erogeController.getErogeList());
+		//	erogeController.refreshXML();
      /*       Sorter s = (Sorter)lstShow.ListViewItemSorter;
             s.Column = e.Column;
 

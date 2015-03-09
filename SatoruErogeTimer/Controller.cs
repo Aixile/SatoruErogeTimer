@@ -72,6 +72,7 @@ namespace SatoruErogeTimer
 			SaveDataFile(Utility.dataPath);
 		}
 
+		static bool sort_name=false, sort_time=false, sort_path=false, sort_status=false;
 		public void check()
 		{
 			erogeList.check();
@@ -155,6 +156,80 @@ namespace SatoruErogeTimer
 				return false;
 			}
 			return true;
+		}
+
+		public void sortByName()
+		{
+			if (sort_name)
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return a.Title.CompareTo(b.Title);
+				});
+			}
+			else
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return b.Title.CompareTo(a.Title);
+				});
+			}
+			sort_name = !sort_name;
+		}
+
+		public void sortByTime()
+		{
+			if (sort_time)
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return a.Time.CompareTo(b.Time);
+				});
+			}
+			else
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return b.Time.CompareTo(a.Time);
+				});
+			}
+			sort_time = !sort_time;
+		}
+		public void sortByPath()
+		{
+			if (sort_path)
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return a.Path.CompareTo(b.Path);
+				});
+			}
+			else
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return b.Path.CompareTo(a.Path);
+				});
+			}
+			sort_path = !sort_path;
+		}
+		public void sortByStatus()
+		{
+			if (sort_status)
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return a.Status.CompareTo(b.Status);
+				});
+			}
+			else
+			{
+				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				{
+					return b.Status.CompareTo(a.Status);
+				});
+			}
+			sort_status = !sort_status;
 		}
 	}
 }

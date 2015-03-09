@@ -193,7 +193,6 @@
 			this.lstShow.Name = "lstShow";
 			this.lstShow.ShowGroups = false;
 			this.lstShow.Size = new System.Drawing.Size(550, 335);
-			this.lstShow.Sorting = System.Windows.Forms.SortOrder.Ascending;
 			this.lstShow.TabIndex = 6;
 			this.lstShow.TabStop = false;
 			this.lstShow.UseCompatibleStateImageBehavior = false;

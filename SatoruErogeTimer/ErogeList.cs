@@ -9,9 +9,9 @@ namespace SatoruErogeTimer
 	[Serializable]
 	public class ErogeList
 	{
-		List<Eroge> erg=new List<Eroge>();
+		List<ErogeNode> erg=new List<ErogeNode>();
 		public ErogeList() { }
-		public ErogeList(List<Eroge> a)
+		public ErogeList(List<ErogeNode> a)
 		{
 			erg = a;
 		}
@@ -28,9 +28,9 @@ namespace SatoruErogeTimer
 			Process[] proc = Process.GetProcesses();
 			string procPath;
 
-			foreach (Eroge i in erg)
+			foreach (ErogeNode i in erg)
 			{
-				i.Status = Eroge.RunningStatus.Resting;
+				i.Status = ErogeNode.RunningStatus.Resting;
 			}
 
 			foreach (Process p in proc)
@@ -39,19 +39,19 @@ namespace SatoruErogeTimer
 				{
 					procPath = Convert.ToString(p.MainModule.FileName);
 					string procPid = Convert.ToString(p.Id);
-					foreach (Eroge i in erg)
+					foreach (ErogeNode i in erg)
 					{
 						if (i.Path == procPath)
 						{
 							if (procPid == calcID.ToString())
 							{
-								i.Status=Eroge.RunningStatus.Focused;
+								i.Status=ErogeNode.RunningStatus.Focused;
 								if (time != 0)
 								{
 									i.addTime(time);
 								}
 							}else{
-								i.Status=Eroge.RunningStatus.Unfocused;
+								i.Status=ErogeNode.RunningStatus.Unfocused;
 							}
 
 						}
@@ -62,14 +62,13 @@ namespace SatoruErogeTimer
 					; //system 等拒绝访问的进程 抛弃
 				}
 			}
-
 		}
-		public List<Eroge> getErogeList()
+		public List<ErogeNode> getErogeList()
 		{
 			return erg;
 		}
 
-		public void addEroge(Eroge e){
+		public void addEroge(ErogeNode e){
 			erg.Add(e);
 		}
 

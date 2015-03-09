@@ -81,9 +81,7 @@ namespace SatoruErogeTimer
 			if (!erogeList.isEmpty())
 			{
 				erogeList.check(3);
-				//	listStyle();
 			}	
-			//refreshXML();
 		}
 		public List<Eroge> getErogeList()
 		{
@@ -97,7 +95,6 @@ namespace SatoruErogeTimer
 			try
 			{
 				getErogeList()[i].run();
-				erogeList.check();
 			}
 			catch
 			{
@@ -110,7 +107,6 @@ namespace SatoruErogeTimer
 			try
 			{
 				getErogeList()[i].Title = name;
-				erogeList.check();
 			}
 			catch
 			{
@@ -123,7 +119,6 @@ namespace SatoruErogeTimer
 			try
 			{
 				getErogeList()[i].Time = Int32.Parse(val);
-				erogeList.check();
 			}
 			catch
 			{
@@ -136,7 +131,6 @@ namespace SatoruErogeTimer
 			try
 			{
 				getErogeList()[i].Path = path;
-				erogeList.check();
 			}
 			catch
 			{
@@ -149,7 +143,6 @@ namespace SatoruErogeTimer
 			try
 			{
 				getErogeList().RemoveAt(i);
-				erogeList.check();
 			}
 			catch
 			{

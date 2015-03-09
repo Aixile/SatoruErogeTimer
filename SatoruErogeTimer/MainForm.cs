@@ -49,9 +49,7 @@ namespace SatoruErogeTimer
             
 			erogeController.LoadDataFile(Utility.dataPath);
 			erogeController.LoadSyncFile(Utility.syncPath);
-			updateListView(erogeController.getErogeList());
-			//ErogeList.printToListViewer(lstShow);
-
+			update();
             //检查更新
             Thread updateThread = new Thread(new ThreadStart(checkUpdate));
             updateThread.Start();
@@ -63,6 +61,11 @@ namespace SatoruErogeTimer
 			if (a.SubItems[2].Text != b.SubItems[2].Text) return false;
 			if (a.SubItems[3].Text != b.SubItems[3].Text) return false;
 			return true;
+		}
+		void update()
+		{
+			erogeController.check();
+			updateListView(erogeController.getErogeList());
 		}
 		void updateListView(List<Eroge> erg)
 		{
@@ -132,9 +135,7 @@ namespace SatoruErogeTimer
             
 			if (ddr == DialogResult.OK)
 			{
-				erogeController.check();
-				updateListView(erogeController.getErogeList());
-
+				update();
 			}
 		}
 		private void ゲームを実行するToolStripMenuItem_Click(object sender, EventArgs e)
@@ -145,7 +146,7 @@ namespace SatoruErogeTimer
 				{
 					if (erogeController.runErogeByIndex(lstShow.SelectedIndices[0]))
 					{
-						updateListView(erogeController.getErogeList());
+						update();
 					}
 				}
 				else
@@ -176,7 +177,7 @@ namespace SatoruErogeTimer
 				{
 					if (erogeController.changeNameByIndex(lstShow.SelectedIndices[0], editNameWindow.str))
 					{
-						updateListView(erogeController.getErogeList());
+						update();
 					}
 				}
 			}
@@ -203,7 +204,7 @@ namespace SatoruErogeTimer
 				{
 					if (erogeController.changeTimeByIndex(lstShow.SelectedIndices[0], editTimeWindow.str))
 					{
-						updateListView(erogeController.getErogeList());
+						update();
 					}
 				}
 			}
@@ -220,7 +221,7 @@ namespace SatoruErogeTimer
 				{
 					if (erogeController.deleteByIndex(lstShow.SelectedIndices[0]))
 					{
-						updateListView(erogeController.getErogeList());
+						update();
 					}
 				}
 			}
@@ -247,7 +248,7 @@ namespace SatoruErogeTimer
                     DialogResult ddr = processWindow.ShowDialog();
                     if (ddr == DialogResult.OK)
                     {
-						updateListView(erogeController.getErogeList());
+						update();
                     }
                 }
                 else
@@ -266,7 +267,7 @@ namespace SatoruErogeTimer
                     {
 						if (erogeController.changePathByIndex(lstShow.SelectedIndices[0],editPassWindow.str))
 						{
-							updateListView(erogeController.getErogeList());
+							update();
 						}
                     }
                 }
@@ -980,21 +981,7 @@ namespace SatoruErogeTimer
 				case 2: erogeController.sortByPath(); break;
 				case 3: erogeController.sortByStatus(); break;
 			}
-			updateListView(erogeController.getErogeList());
-		//	erogeController.refreshXML();
-     /*       Sorter s = (Sorter)lstShow.ListViewItemSorter;
-            s.Column = e.Column;
-
-            if (s.Order == System.Windows.Forms.SortOrder.Ascending)
-            {
-                s.Order = System.Windows.Forms.SortOrder.Descending;
-            }
-            else
-            {
-                s.Order = System.Windows.Forms.SortOrder.Ascending;
-            }
-            lstShow.Sort();
-            refreshXML();*/
+			update();
         }
 
         private void checkUpdate()

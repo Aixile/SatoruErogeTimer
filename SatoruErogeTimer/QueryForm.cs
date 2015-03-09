@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace SatoruErogeTimer
 {
-    public partial class Form3 : Form
+    public partial class QueryForm : Form
     {
         private string flag;
         public string Flag
@@ -18,7 +18,7 @@ namespace SatoruErogeTimer
             get { return flag; }
             set { flag = value; }
         }
-        public Form3()
+        public QueryForm()
         {
             InitializeComponent();
 			//Fix form size

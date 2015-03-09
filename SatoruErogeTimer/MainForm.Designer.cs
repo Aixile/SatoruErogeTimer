@@ -218,7 +218,7 @@
 			// state
 			// 
 			this.state.Text = "実行状態";
-			this.state.Width = 201;
+			this.state.Width = 182;
 			// 
 			// notifyIcon1
 			// 

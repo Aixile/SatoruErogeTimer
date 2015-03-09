@@ -39,7 +39,7 @@ namespace SatoruErogeTimer
 			lstShow.Columns[2].TextAlign = HorizontalAlignment.Left;
 			lstShow.Columns.Add("パス", 200);
 			lstShow.Columns[3].TextAlign = HorizontalAlignment.Left;
-			lstShow.Columns.Add("タイトル", 150);
+			lstShow.Columns.Add("タイトル", 160);
 			lstShow.Columns[4].TextAlign = HorizontalAlignment.Left;
 			//lstShow.Columns.Add("启动时间", 150);
 			//lstShow.Columns[6].TextAlign = HorizontalAlignment.Left;

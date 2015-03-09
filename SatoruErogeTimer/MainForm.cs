@@ -24,8 +24,6 @@ namespace SatoruErogeTimer
 
 	public partial class MainForm : Form
 	{
-
-
         protected override void WndProc(ref Message m)
         {
             switch (m.Msg)
@@ -335,7 +333,6 @@ namespace SatoruErogeTimer
                 MessageBox.Show("設定終了", "ErogeTimer");
 			}
 		}
-
 		private void 元に戻すToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			string str = this.GetType().Assembly.Location;
@@ -346,7 +343,6 @@ namespace SatoruErogeTimer
 			}
 
 		}
-
 		private void erogeTimerについてToolStripMenuItem_Click(object sender, EventArgs e)
 		{
             MessageBox.Show("Version "+Utility.version+" By SakuraiSatoru, Many thanks to Amane Nagatsuki", "ErogeTimer");
@@ -558,8 +554,6 @@ namespace SatoruErogeTimer
                     }
                     //s反应到config.xml
 
-
-
                     //重新载入listview,保存到sync.xml
                     if (lstShow.Items.Count > 0)
                     {
@@ -651,7 +645,6 @@ namespace SatoruErogeTimer
 
                 this.timer1.Enabled = true;
             }
-            
         }
 
         //public bool stopFlag;
@@ -833,7 +826,6 @@ namespace SatoruErogeTimer
             }
             
         }
-
         private void restore()
         {
             if (erogeSavadataPath != string.Empty)
@@ -871,8 +863,6 @@ namespace SatoruErogeTimer
                 gameName = lstShow.SelectedItems[0].SubItems[0].Text;
                 if (gameName != string.Empty || label1.Text != string.Empty)
                 {
-                    
-
                     try
                     {
                         XmlDocument xmlDoc = new XmlDocument();
@@ -966,10 +956,6 @@ namespace SatoruErogeTimer
             {
                 MessageBox.Show("何も選択されていません", "ErogeTimer");
             }
-
-
-            
-            
         }
 
         private void lstShow_ColumnClick(object sender, ColumnClickEventArgs e)

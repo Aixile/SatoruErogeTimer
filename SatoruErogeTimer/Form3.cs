@@ -21,6 +21,8 @@ namespace SatoruErogeTimer
         public Form3()
         {
             InitializeComponent();
+			//Fix form size
+			this.FormBorderStyle = FormBorderStyle.FixedSingle;
             
             
         }

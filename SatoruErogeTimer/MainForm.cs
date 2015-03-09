@@ -44,8 +44,11 @@ namespace SatoruErogeTimer
 		{
 			InitializeComponent();
 			timer1.Enabled = true;
-            
+			//register event for user_name_changed_event
+			erogeController.UserNameChanged += new Controller.UserName(syncUserNameChanged);
+			//load data file
 			erogeController.LoadDataFile(Utility.dataPath);
+			//load sync profile
 			erogeController.LoadSyncFile(Utility.syncPath);
 			update();
             //检查更新
@@ -65,24 +68,24 @@ namespace SatoruErogeTimer
 			erogeController.check();
 			updateListView(erogeController.getErogeList());
 		}
-		void updateListView(List<Eroge> erg)
+		void updateListView(List<ErogeNode> erg)
 		{
 			bool changed = false;
 			if (erg.Count != lstShow.Items.Count) changed = true;
-			foreach (Eroge i in erg)
+			foreach (ErogeNode i in erg)
 			{
 				ListViewItem lstItem = new ListViewItem(new string[] { i.Title, i.getTime(), i.Path, i.getState() });
 				switch (i.Status)
 				{
-					case Eroge.RunningStatus.Focused:
+					case ErogeNode.RunningStatus.Focused:
 						lstItem.ForeColor = Color.Black;
 						lstItem.Font = Utility.fRunning;
 						break;
-					case Eroge.RunningStatus.Resting:
+					case ErogeNode.RunningStatus.Resting:
 						lstItem.ForeColor = Color.Gray;
 						lstItem.Font = Utility.fResting;
 						break;
-					case Eroge.RunningStatus.Unfocused:
+					case ErogeNode.RunningStatus.Unfocused:
 						lstItem.ForeColor = Color.Black;
 						lstItem.Font = Utility.fResting;
 						break;
@@ -113,7 +116,7 @@ namespace SatoruErogeTimer
 					lstShow.Items.RemoveAt(j);
 				}
 			}
-			if (changed) erogeController.refreshXML();
+			if (changed) erogeController.saveData();
 		}
 		private void timer1_Tick(object sender, EventArgs e)
 		{
@@ -161,7 +164,7 @@ namespace SatoruErogeTimer
 		{
 			if (lstShow.SelectedItems.Count > 0)
 			{
-				Form3 editNameWindow = new Form3();
+				QueryForm editNameWindow = new QueryForm();
                 editNameWindow.StartPosition = FormStartPosition.Manual;
                 Point a = new Point();
 
@@ -188,7 +191,7 @@ namespace SatoruErogeTimer
 		{
 			if (lstShow.SelectedItems.Count > 0)
 			{
-				Form3 editTimeWindow = new Form3();
+				QueryForm editTimeWindow = new QueryForm();
                 editTimeWindow.StartPosition = FormStartPosition.Manual;
                 Point a = new Point();
 
@@ -251,7 +254,7 @@ namespace SatoruErogeTimer
                 }
                 else
                 {
-                    Form3 editPassWindow = new Form3();
+                    QueryForm editPassWindow = new QueryForm();
                     editPassWindow.StartPosition = FormStartPosition.Manual;
                     Point a = new Point();
 
@@ -354,14 +357,20 @@ namespace SatoruErogeTimer
             a.Y = 5;
             this.label1.Location = a;
         }
+		//Listening user_name_changed_event
+		private void syncUserNameChanged(object sender, UserNameEventArgs e)
+		{
+			this.label1.Text = e.Name;
+			labelRedraw();
+		}
         private void ユーザ変更ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string strSourcePath = Application.StartupPath + "\\";
-            string dataPath = strSourcePath + "data.xml";
-            string syncPath = strSourcePath + "sync.xml";
-            if (!File.Exists(syncPath))
+            //string strSourcePath = Application.StartupPath + "\\";
+           // string dataPath = strSourcePath + "data.xml";
+          //  string syncPath = strSourcePath + "sync.xml";
+            if (!File.Exists(Utility.syncPath))
             {
-                Form3 setUserWindow = new Form3();
+                QueryForm setUserWindow = new QueryForm();
                 setUserWindow.StartPosition = FormStartPosition.Manual;
                 Point a = new Point();
 
@@ -388,7 +397,7 @@ namespace SatoruErogeTimer
                     rootNode.AppendChild(xmlelem);
                     XmlNode xmlelem2 = xmlDoc.CreateElement("", "Eroges", "");
                     rootNode.AppendChild(xmlelem2);
-                    xmlDoc.Save(syncPath);
+					xmlDoc.Save(Utility.syncPath);
                     this.label1.Text = userName;
                     labelRedraw();
                 }
@@ -396,13 +405,13 @@ namespace SatoruErogeTimer
             else
             {
                 XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(syncPath);
+				xmlDoc.Load(Utility.syncPath);
                 XmlNode rootNode = xmlDoc.SelectSingleNode("Sync");
                 XmlNodeList userName = rootNode.ChildNodes;
                 string userNameStr = userName[0].InnerText;
                 if (MessageBox.Show(userNameStr + "から新規しますか？", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                 { 
-                    Form3 setUserWindow = new Form3();
+                    QueryForm setUserWindow = new QueryForm();
                     setUserWindow.StartPosition = FormStartPosition.Manual;
                     Point a = new Point();
 
@@ -416,7 +425,7 @@ namespace SatoruErogeTimer
                     {
                         userNameStr = setUserWindow.str;
                         userName[0].InnerText = userNameStr;
-                        xmlDoc.Save(syncPath);
+						xmlDoc.Save(Utility.syncPath);
                         this.label1.Text = userNameStr;
                         labelRedraw();
                     }
@@ -434,8 +443,8 @@ namespace SatoruErogeTimer
                 this.Text = "ErogeTimer @同期中";
                 this.timer1.Enabled = false;
                 string strSourcePath = Application.StartupPath + "\\";
-                string dataPath = strSourcePath + "data.xml";
-				string dataBakPath = strSourcePath + "data.xml.bak";
+				string dataPath = Utility.dataPath;
+				string dataBakPath = dataPath+".bak";
                 string syncPath = strSourcePath + "sync.xml";
                 string syncBakPath = strSourcePath + "sync.xml.bak";
 				File.Copy((dataPath), (dataBakPath), true);
@@ -763,7 +772,7 @@ namespace SatoruErogeTimer
                             }
                         }
 
-                        Form3 editSavePathWindow = new Form3();
+                        QueryForm editSavePathWindow = new QueryForm();
                         editSavePathWindow.StartPosition = FormStartPosition.Manual;
                         Point a = new Point();
 

@@ -122,7 +122,7 @@ namespace SatoruErogeTimer
 				}
 				else
 				{
-					Eroge eroge = new Eroge(lstShow.SelectedItems[0].SubItems[4].Text, 0, lstShow.SelectedItems[0].SubItems[3].Text)
+					ErogeNode eroge = new ErogeNode(lstShow.SelectedItems[0].SubItems[4].Text, 0, lstShow.SelectedItems[0].SubItems[3].Text)
 					{
 						processName = lstShow.SelectedItems[0].SubItems[1].Text
 					};
@@ -148,7 +148,7 @@ namespace SatoruErogeTimer
 				}
 				else
 				{
-					Eroge eroge = new Eroge(lstShow.SelectedItems[0].SubItems[4].Text, 0, lstShow.SelectedItems[0].SubItems[3].Text)
+					ErogeNode eroge = new ErogeNode(lstShow.SelectedItems[0].SubItems[4].Text, 0, lstShow.SelectedItems[0].SubItems[3].Text)
 					{
 						processName = lstShow.SelectedItems[0].SubItems[1].Text
 					};

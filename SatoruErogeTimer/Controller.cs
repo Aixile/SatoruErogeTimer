@@ -25,6 +25,11 @@ namespace SatoruErogeTimer
 	public class Controller
 	{
 		public ErogeList erogeList=new ErogeList();
+		public SyncController syncController = new SyncController();
+
+		public delegate void UserName(object sender, UserNameEventArgs e);
+		public event UserName UserNameChanged;
+
 		public Controller() { } 
 		public void LoadDataFile(string dataPath)
 		{
@@ -58,21 +63,38 @@ namespace SatoruErogeTimer
 		public void LoadSyncFile(string syncPath)
 		{
 			if (File.Exists(syncPath))
-			{//载入用户名
-				XmlDocument xmlDoc2 = new XmlDocument();
-				xmlDoc2.Load(syncPath);
-				XmlNode rootNode = xmlDoc2.SelectSingleNode("Sync");
-				XmlNodeList userName = rootNode.ChildNodes;
-	//			this.label1.Text = userName[0].InnerText;
-	//			labelRedraw();
+			{
+				try
+				{
+					FileStream stream = new FileStream(syncPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+					XmlSerializer xmlserializer = new XmlSerializer(typeof(SyncController));
+					syncController = (SyncController)xmlserializer.Deserialize(stream);
+					stream.Close();
+					UserNameEventArgs e1 = new UserNameEventArgs();
+					e1.Name = syncController.user;
+					UserNameChanged(this, e1);
+				}
+				catch
+				{
+				}
 			}
 		}
-		public void refreshXML()
+		public void SaveSyncFile(string syncPath)
+		{
+			if (syncController.user.Length > 0)
+			{
+				FileStream stream = new FileStream(syncPath, FileMode.Create, FileAccess.Write, FileShare.None);
+				XmlSerializer xmlserializer = new XmlSerializer(typeof(SyncController));
+				xmlserializer.Serialize(stream, syncPath);
+				stream.Close();
+			}
+		}
+		public void saveData()
 		{
 			SaveDataFile(Utility.dataPath);
 		}
 
-		static bool sort_name=false, sort_time=false, sort_path=false, sort_status=false;
+		
 		public void check()
 		{
 			erogeList.check();
@@ -83,13 +105,17 @@ namespace SatoruErogeTimer
 				erogeList.check(3);
 			}	
 		}
-		public List<Eroge> getErogeList()
+		
+		
+		public List<ErogeNode> getErogeList()
 		{
 			return erogeList.getErogeList();
 		}
-		public void addEroge(Eroge e){
+		public void addEroge(ErogeNode e){
 			getErogeList().Add(e);
 		}
+
+		
 		public bool runErogeByIndex(int i)
 		{
 			try
@@ -151,37 +177,38 @@ namespace SatoruErogeTimer
 			return true;
 		}
 
+
+		static bool sort_name=false, sort_time=false, sort_path=false, sort_status=false;
 		public void sortByName()
 		{
 			if (sort_name)
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return a.Title.CompareTo(b.Title);
 				});
 			}
 			else
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return b.Title.CompareTo(a.Title);
 				});
 			}
 			sort_name = !sort_name;
 		}
-
 		public void sortByTime()
 		{
 			if (sort_time)
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return a.Time.CompareTo(b.Time);
 				});
 			}
 			else
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return b.Time.CompareTo(a.Time);
 				});
@@ -192,14 +219,14 @@ namespace SatoruErogeTimer
 		{
 			if (sort_path)
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return a.Path.CompareTo(b.Path);
 				});
 			}
 			else
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return b.Path.CompareTo(a.Path);
 				});
@@ -210,14 +237,14 @@ namespace SatoruErogeTimer
 		{
 			if (sort_status)
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return a.Status.CompareTo(b.Status);
 				});
 			}
 			else
 			{
-				erogeList.getErogeList().Sort(delegate(Eroge a, Eroge b)
+				erogeList.getErogeList().Sort(delegate(ErogeNode a, ErogeNode b)
 				{
 					return b.Status.CompareTo(a.Status);
 				});

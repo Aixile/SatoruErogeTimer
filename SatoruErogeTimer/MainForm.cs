@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Xml;
 using Microsoft.Win32;
 using System.Net;
-using System.Web;
-using System.Collections;
-using System.IO.Compression;
 using System.Threading;
-using System.Xml.Serialization;
 
 namespace SatoruErogeTimer
 {
@@ -52,8 +43,8 @@ namespace SatoruErogeTimer
 			erogeController.LoadSyncFile(Utility.syncPath);
 			update();
             //检查更新
-            Thread updateThread = new Thread(new ThreadStart(checkUpdate));
-            updateThread.Start();
+        //    Thread updateThread = new Thread(new ThreadStart(checkUpdate));
+         //   updateThread.Start();
 		}
 		bool isEqual(ListViewItem a, ListViewItem b)
 		{
@@ -348,7 +339,7 @@ namespace SatoruErogeTimer
 		}
 		private void erogeTimerについてToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-            MessageBox.Show("Version "+Utility.version+" By SakuraiSatoru, Many thanks to Amane Nagatsuki", "ErogeTimer");
+            MessageBox.Show("ErogeTimer 0.1.0 By Amane Nagatsuki, Based on SatoruErogeTimer Version "+Utility.version+" By SakuraiSatoru.", "ErogeTimer");
 		}
         private void labelRedraw()
         {
@@ -382,7 +373,8 @@ namespace SatoruErogeTimer
                 
                 if (ddr == DialogResult.OK)
                 {
-                    XmlDocument xmlDoc = new XmlDocument();
+                    string userName = setUserWindow.str;
+           /*         XmlDocument xmlDoc = new XmlDocument();
                     XmlDeclaration xmldecl;
                     xmldecl = xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
                     xmlDoc.AppendChild(xmldecl);
@@ -399,7 +391,7 @@ namespace SatoruErogeTimer
                     rootNode.AppendChild(xmlelem2);
 					xmlDoc.Save(Utility.syncPath);
                     this.label1.Text = userName;
-                    labelRedraw();
+                    labelRedraw();*/
                 }
             }
             else
@@ -409,7 +401,7 @@ namespace SatoruErogeTimer
                 XmlNode rootNode = xmlDoc.SelectSingleNode("Sync");
                 XmlNodeList userName = rootNode.ChildNodes;
                 string userNameStr = userName[0].InnerText;
-                if (MessageBox.Show(userNameStr + "から新規しますか？", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                if (MessageBox.Show(userNameStr + "から変更しますか？", "ErogeTimer", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                 { 
                     QueryForm setUserWindow = new QueryForm();
                     setUserWindow.StartPosition = FormStartPosition.Manual;
@@ -966,7 +958,6 @@ namespace SatoruErogeTimer
                 MessageBox.Show("何も選択されていません", "ErogeTimer");
             }
         }
-
         private void lstShow_ColumnClick(object sender, ColumnClickEventArgs e)
         {
 			switch (e.Column)
@@ -1005,6 +996,11 @@ namespace SatoruErogeTimer
             catch { }
 
         }
+		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+				Dispose();
+				Application.Exit();
+		}
 
 		private void lstShow_SelectedIndexChanged(object sender, EventArgs e)
 		{

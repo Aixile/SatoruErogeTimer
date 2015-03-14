@@ -26,11 +26,12 @@ namespace SatoruErogeTimer
 			Process currentproc = Process.GetCurrentProcess();
 			Console.WriteLine(currentproc.ProcessName);
 			Process[] processcollection = Process.GetProcessesByName(currentproc.ProcessName);
+
 #if DEBUG
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new MainForm());
-#else 
+#else
 			if (processcollection.Length > 1)
 			{
 				foreach (Process process in processcollection)
@@ -46,7 +47,7 @@ namespace SatoruErogeTimer
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				Application.Run(new MainForm());
-	//		}
+			}
 #endif
 		}
 	}

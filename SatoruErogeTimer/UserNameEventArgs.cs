@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SatoruErogeTimer
 {
-	class UserNameEventArgs:EventArgs
+	public class UserNameEventArgs:EventArgs
 	{
 		string name;
 

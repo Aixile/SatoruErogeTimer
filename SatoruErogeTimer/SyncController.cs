@@ -16,8 +16,11 @@ namespace SatoruErogeTimer
 
 		public SyncController() { }
 		public void LoadSyncProfile(){
-
 		}
+	/*	List<Eroge> getFromServer()
+		{
+			return;
+		}*/
 
 	}
 }

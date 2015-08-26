@@ -59,6 +59,13 @@ namespace SatoruErogeTimer
 			BinaryFormatter bf = new BinaryFormatter();
 			bf.Serialize(fs, erogeList);
 			fs.Close();
+
+			System.Xml.Serialization.XmlSerializer serializer =
+				new System.Xml.Serialization.XmlSerializer(typeof(ErogeNode[]));
+			System.IO.StreamWriter sw = new System.IO.StreamWriter(dataPath+".xml", false);
+			serializer.Serialize(sw, erogeList.getErogeList().ToArray());
+			sw.Close();
+
 		}
 		public void LoadSyncFile(string syncPath)
 		{
